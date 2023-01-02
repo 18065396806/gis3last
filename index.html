@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Document</title>
+	<link rel="stylesheet" href="./css/index.css">
+	<link rel="stylesheet" href="https://js.arcgis.com/4.19/esri/themes/light/main.css">
+
+</head>
+
+<body>
+	<!-- 头部 -->
+	<div class="title">
+		<!-- 最左边的文字 -->
+		<div class="title_left">HUAWEI Mate 50</div>
+		<!-- 右边的按钮 -->
+		<div class="title_right">
+			<!-- 三个标题 -->
+			<ul>
+				<li>功能特征</li>
+				<li>规格参数</li>
+				<li>服务支持</li>
+			</ul>
+			<!-- 按钮 -->
+			<button>购买</button>
+		</div>
+	</div>
+
+<!-- 轮播图 -->
+<div class="focus">
+	<ul>
+		<!-- 用户可能一开始往上一张滑，所以要多添加一个focus3 -->
+		<li><img src="./img/lbt/1.png" alt=""></li>
+		<li><img src="./img/lbt/2.png" alt=""></li>
+		<li><img src="./img/lbt/3.png" alt=""></li>
+		<li><img src="./img/lbt/4.png" alt=""></li>
+		<li><img src="./img/lbt/1.png" alt=""></li>
+	</ul>
+	<ol>
+		<li class="current"></li>
+		<li></li>
+		<li></li>
+	</ol>
+</div>
+
+	<!-- 主体信息 -->
+	<div class="informationDiv" id="list">
+		<div class="listbox">
+			<!-- 这里面的内容通过获取数据后填充 -->
+            <div class="listbox">
+                <!-- 图片 -->
+    <!-- 标题 -->
+    <div class="inftitle">
+        <h3>华为mate60</h3>
+    </div>
+    <!-- 价格 -->
+    <div class="infprice">
+        <p>￥6500</p>
+    </div>
+    <!-- 介绍 -->
+    <div class="infjs">
+        <p>
+            HUAWEI Mate50（128GB）参数 CPU： 高通 骁龙8+ 4G 行业最高： 天玑9000+＞ 后置：5000万像素 高清级像素 高于67.36%手机像素 行业最高： 20000万＞ 前置：1300万像素超广角摄像头 高清级像素 高于95.9%手机像素
+        </p>
+    </div>
+</div> 
+		</div>
+	</div>
+
+	<!-- 标题 -->
+	<div class="bt1">HUAWEI Mate 50</div>
+	
+     <!-- 第二个盒子 -->
+     <div class="box_two">
+        <div class="box_two_up">
+            <!-- 左边 -->
+            <div class="box_two_up_left">
+                <!-- 鼠标移入显示 -->
+                <div class="box_two_up_left_hover">
+                    <!-- 按钮 -->
+                    <div class="box_two_up_left_hover_btn">点击了解更多</div>
+                </div>
+            </div>
+            <div class="box_two_up_right"></div>
+        </div>
+        <!-- 下半部分 -->
+        <div class="box_two_dwon">
+            <div class="box_two_dwon1">
+                <img src='../img/hz/2.jpg'>
+            </div>
+            <div class="box_two_dwon1">
+				<img src='../img/hz/3.jpg'>
+            </div>
+            <div class="box_two_dwon1">
+				<img src='../img/hz/5.jpg'>
+            </div>
+        </div>
+     </div>
+
+
+	<!-- 推荐购买门店 -->
+	<div class="tjmd">
+		<h4>用户使用热度图:</h4>
+		<!-- 放地图的div  -->
+		<div class="dtview"  id="viewDiv"></div>
+	</div>
+
+	<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+	<script src="https://js.arcgis.com/4.19/"></script>
+	<script>
+		// 请求后端数据
+		document.addEventListener('DOMContentLoaded', function () {
+			// 1:发送axios请求
+			axios({
+				//请求类型
+				method: 'GET',
+				// URL 请求地址
+				url: 'http://127.0.0.1:3007/api/reguser'
+				// 指定返回的数据
+			}).then(response => {
+				// console.log(response.data.data[0]);
+				// 将返回的结果存放到 msg 中
+				msg = response.data.data;
+				// 打印出 获取到的数据
+				console.log(msg);
+				// 定义一段空的字符串
+				var list_html = '';
+				// 遍历循环出 获取到的json数据
+				for (var i = 0; i < msg.length; i++) {
+					var v = msg[i];
+					list_html += `
+					<div class="listbox">
+					<!-- 图片 -->
+		<!-- 标题 -->
+		<div class="inftitle">
+			<h3>${v.title}</h3>
+		</div>
+		<!-- 价格 -->
+		<div class="infprice">
+			<p>${v.price}</p>
+		</div>
+		<!-- 介绍 -->
+		<div class="infjs">
+			<p>
+				${v.jieshao}
+			</p>
+		</div>
+	</div> 
+					`
+				}
+				var box = document.querySelector("#list");
+				// 将获取到的数据 填充到 对应的位置
+				box.innerHTML = list_html;
+			})
+		});
+
+
+		// 导入需要的模块，这里引入了Map和MapView
+        require([
+      "esri/Map",
+      "esri/layers/CSVLayer",
+      "esri/views/MapView",
+    //   "esri/widgets/Legend",
+      "esri/views/layers/support/FeatureEffect"
+    ], function (Map, CSVLayer, MapView, Legend, FeatureEffect) {
+      const url =
+        "https://cxqttkl.github.io/web4gis15/wuhangps-tiny.csv";
+
+      // Paste the url into a browser's address bar to download and view the attributes
+      // in the CSV file. These attributes include:
+      // * mag - magnitude
+      // * type - earthquake or other event such as nuclear test
+      // * place - location of the event
+      // * time - the time of the event
+
+      const template = {
+        title: "{place}",
+        content: "Magnitude {mag} {type} hit {place} on {time}."
+      };
+
+      // The heatmap renderer assigns each pixel in the view with
+      // an intensity value. The ratio of that intensity value
+      // to the maxPixel intensity is used to assign a color
+      // from the continuous color ramp in the colorStops property
+
+      const renderer = {
+        type: "heatmap",
+        // colorStops: [
+        //   { color: "rgba(63, 40, 102, 0)", ratio: 0 },
+        //   { color: "#472b77", ratio: 0.083 },
+        //   { color: "#4e2d87", ratio: 0.166 },
+        //   { color: "#563098", ratio: 0.249 },
+        //   { color: "#5d32a8", ratio: 0.332 },
+        //   { color: "#6735be", ratio: 0.415 },
+        //   { color: "#7139d4", ratio: 0.498 },
+        //   { color: "#7b3ce9", ratio: 0.581 },
+        //   { color: "#853fff", ratio: 0.664 },
+        //   { color: "#a46fbf", ratio: 0.747 },
+        //   { color: "#c29f80", ratio: 0.83 },
+        //   { color: "#e0cf40", ratio: 0.913 },
+        //   { color: "#ffff00", ratio: 1 }
+        // ],
+        maxPixelIntensity: 250,
+        minPixelIntensity: 0
+      };
+
+      const rotationRenderer = {
+        type: "simple", // autocasts as new SimpleRenderer()
+        symbol: {
+          type: "simple-marker", // autocasts as new SimpleMarkerSymbol()
+          // use an SVG path to create an arrow shape
+        //   path: "M14.5,29 23.5,0 14.5,9 5.5,0z",
+          color: "#D2691E",
+          outline: {
+            color: [0, 0, 0, 0.7],
+            width: 0.5
+          },
+          // since the arrow points down, you can set the angle to 180
+          // to force it to point up (0 degrees North) by default
+          angle: 180,
+          size: 15
+        },
+        visualVariables: [
+          {
+            type: "rotation", // indicates that symbols should be rotated based on value in field
+            field: "T_Heading", // field containing aspect values
+            rotationType: "geographic"
+          }
+
+        ]
+      };
+
+      const layer = new CSVLayer({
+        url: url,
+        title: "Wuhan Taxi A Day",
+        copyright: "Wuhan",
+        latitudeField: "Lat",
+        longitudeField: "Long",
+        renderer: renderer //rotationRenderer
+        //blendMode : "screen",
+        //effect: "bloom(4, 0.5px, 0.1)"
+      });
+
+      const map = new Map({
+        basemap: "satellite",
+        layers: [layer]
+      });
+
+      const view = new MapView({
+        container: "viewDiv",
+        center: [114.3, 30.5],
+        zoom: 13,
+        map: map
+      });
+
+      var min = 10;
+      var layerView;
+
+      view.whenLayerView(layer).then(function (lv) { layerView = lv });
+
+      view.on("click", function (evt) {
+        if (layerView) {
+
+          
+
+          layerView.effect = {
+            filter: {
+              where: "T_Speed > " + min
+            },
+            includedEffect: "bloom(150%, 1px, 0.2) saturate(200%)",
+            excludedEffect: "blur(1px) brightness(65%)"
+          }
+        }
+
+        if (min >= 40) 
+          { min = 5; }
+          else 
+          { min = min + 5; }
+
+      });
+
+      view.ui.add(
+        new Legend({
+          view: view
+        }),
+        "bottom-left"
+      );
+    });
+
+
+
+	window.addEventListener('load', function() {
+    var focus = document.querySelector('.focus');
+    var ul = focus.children[0];   // 获取focus的第一个孩子，也就是ul
+    var ol = focus.children[1];
+    var w = focus.offsetWidth;    // 获取focus的宽度
+    var index = 0;    // 用来记录图片索引
+    // 自动轮播
+    var timer = setInterval(function() {    // 添加定时器，两秒调用一次 
+        index++;   // 每调用一次（轮播一次），图片索引号+1
+        var translatex = -index * w;    // ul要移动的距离
+        ul.style.transition = 'all .4s';   // 添加过渡属性（css3里的属性）
+        ul.style.transform = 'translateX(' + translatex + 'px)';
+    }, 2000);
+    // 给ul绑定监听函数（每次轮播移动的都是整个ul）  过渡结束（transitionend）时执行
+    ul.addEventListener('transitionend', function() {
+        if(index >= 3) {    // 索引 > 3说明已经轮播到最后一张了
+            index = 0;
+            // 去掉过渡效果 快速回到第一张
+            ul.style.transition = '';
+            var translatex = -index * w;
+            ul.style.transform = 'translateX(' + translatex + 'px)';
+        } else if(index < 0) {    // 索引 < 0说明用户一开始是往前滑的
+            index = 2;
+            ul.style.transition = '';
+            var translatex = -index * w;
+            ul.style.transform = 'translateX(' + translatex + 'px)';
+        }
+        // 让底部小圆点跟着一起动
+        // 将带有current类的li去掉该类
+        ol.querySelector('.current').classList.remove('current');
+        // 给当前li添加current类
+        ol.children[index].classList.add('current');
+    })
+    // 手指滑动轮播图
+    var startX = 0;    // 用来存储手指初始位置
+    var moveX = 0;     // 用来存储手指在屏幕上移动的距离
+    var flag = false;    // 记录用户是否在图上移动了手指
+    // 给ul绑定手指触摸事件
+    ul.addEventListener('touchstart', function(e) {
+        startX = e.targetTouches[0].pageX;  // 手指的初始触摸位置（左右轮播，只记录x就可以了）
+        clearInterval(timer);    // 当手指触摸屏幕时清除定时器（不让它自动轮播了）
+    })
+    // 给ul绑定手指移动事件
+    ul.addEventListener('touchmove', function(e) {
+        moveX = e.targetTouches[0].pageX - startX;   // 手指移动的距离
+        var translatex = -index * w + moveX;
+        ul.style.transition = 'none';
+        ul.style.transform = 'translateX(' + translatex + 'px)';
+        flag = true;    // 手指移动了，将flag改为true
+        e.preventDefault();   // 阻止屏幕滚动的默认行为
+    })
+    // 给ul绑定手指离开事件
+    ul.addEventListener('touchend', function(e) {
+        if(flag) {     // flag==true（移动图片）时才去判断用户的移动方向和距离
+            if(Math.abs(moveX) > 50) {  // 移动距离大于50时 滑向上一张或下一张（moveX可能为正也可能为负，Math.abs()取绝对值）
+                if(moveX > 0) {  // 大于0右滑 图片索引减一
+                    index--;
+                } else {    // 小于0左滑 图片索引加一
+                    index++;
+                }
+                var translatex = -index * w;
+                ul.style.transition = 'all .3s';
+                ul.style.transform = 'translateX(' + translatex + 'px)';
+            } else {    // 小于50px就回弹
+                var translatex = -index * w;
+                ul.style.transition = 'all .1s';
+                ul.style.transform = 'translateX(' + translatex + 'px)';
+            }
+        }
+        // 结束后 把flag重新改为false，并开启定时器让图片开始轮播
+        flag = false;
+        // 先清除再开启，保证只有一个定时器在运行（不然会有bug）
+        clearInterval(timer);
+        timer = setInterval(function() {
+            index++;
+            var translatex = -index * w;
+            ul.style.transition = 'all .4s';
+            ul.style.transform = 'translateX(' + translatex + 'px)';
+        }, 2000);
+    })
+})
+	</script>
+</body>
+
+</html>
